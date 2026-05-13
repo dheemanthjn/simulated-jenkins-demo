@@ -1,4 +1,19 @@
 {
-  "status": "not_built",
-  "branch": "main"
+  "job_id": 103,
+  "status": "FAILURE",
+  "repo": "frontend-app",
+  "branch": "main",
+  "pusher": "admin-alice",
+  "pusher_role": "admin",
+  "queue_level": 1,
+  "preempted": false,
+  "preempted_cnt": 0,
+  "duration_s": 46.05,
+  "stages_done": [
+    "Checkout",
+    "Install Deps",
+    "Build",
+    "Test"
+  ],
+  "completed_at": "2026-05-13T09:37:33.346Z"
 }
