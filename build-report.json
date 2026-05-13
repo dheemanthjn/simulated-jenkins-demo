@@ -1,14 +1,14 @@
 {
-  "job_id": 110,
+  "job_id": 1,
   "status": "SUCCESS",
   "repo": "frontend-app",
   "branch": "main",
-  "pusher": "admin-carol",
-  "pusher_role": "admin",
-  "queue_level": 1,
+  "pusher": "employee-dave",
+  "pusher_role": "employee",
+  "queue_level": 3,
   "preempted": false,
   "preempted_cnt": 0,
-  "duration_s": 33.75,
+  "duration_s": 13.27,
   "stages_done": [
     "Checkout",
     "Install Deps",
@@ -16,5 +16,5 @@
     "Test",
     "Deploy"
   ],
-  "completed_at": "2026-05-13T16:11:00.361Z"
+  "completed_at": "2026-05-13T17:55:50.092Z"
 }
