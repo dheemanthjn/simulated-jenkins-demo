@@ -1,4 +1,18 @@
 {
-  "status": "not_built",
-  "branch": "main"
+  "job_id": 105,
+  "status": "FAILURE",
+  "repo": "data-pipeline",
+  "branch": "main",
+  "pusher": "teamlead-eve",
+  "pusher_role": "teamlead",
+  "queue_level": 1,
+  "preempted": false,
+  "preempted_cnt": 0,
+  "duration_s": 9.07,
+  "stages_done": [
+    "Checkout",
+    "Install Deps",
+    "Build"
+  ],
+  "completed_at": "2026-05-13T09:36:59.417Z"
 }
