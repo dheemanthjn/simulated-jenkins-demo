@@ -1,14 +1,14 @@
 {
-  "job_id": 116,
+  "job_id": 115,
   "status": "SUCCESS",
   "repo": "data-pipeline",
   "branch": "experimental/ml",
-  "pusher": "intern-p3",
+  "pusher": "intern-p2",
   "pusher_role": "intern",
   "queue_level": 5,
   "preempted": false,
   "preempted_cnt": 0,
-  "duration_s": 25.78,
+  "duration_s": 38.9,
   "stages_done": [
     "Checkout",
     "Install Deps",
@@ -16,5 +16,5 @@
     "Test",
     "Deploy"
   ],
-  "completed_at": "2026-05-13T16:12:01.973Z"
+  "completed_at": "2026-05-13T16:12:15.370Z"
 }
