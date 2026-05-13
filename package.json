@@ -4,10 +4,13 @@
   "description": "A simulated Jenkins CI/CD system",
   "main": "master/server.js",
   "scripts": {
-    "start": "node master/server.js",
-    "dev": "nodemon master/server.js",
-    "simulate": "node scripts/simulate-push.js",
-    "load-test": "node scripts/load-test.js 10 1000"
+    "start":          "node master/server.js",
+    "dev":            "nodemon master/server.js",
+    "demo":           "node scripts/demo.js",
+    "setup-branches": "node scripts/setup-demo-branches.js",
+    "trigger-all":    "node scripts/trigger-all-branches.js",
+    "simulate":       "node scripts/simulate-push.js",
+    "load-test":      "node scripts/load-test.js 10 1000"
   },
   "dependencies": {
     "sql.js": "^1.12.0",

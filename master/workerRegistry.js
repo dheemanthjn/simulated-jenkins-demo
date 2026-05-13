@@ -6,6 +6,7 @@ const {
 } = require('./db');
 const { broadcast }                    = require('./routes/events');
 const { isPreempted, clearPreemption } = require('./preemptionManager');
+const { pushBuildResult }              = require('./gitPush');
 
 const WORKER_DEFINITIONS = [
   { id:'worker-1', language:'Python',     name:'PyWorker'   },
@@ -105,10 +106,12 @@ async function assignJobToWorker(workerDef, job) {
       console.log(`[WORKER] ${worker.name} freed (preempted job #${job.id})`);
     } else {
       const st = result.success ? 'SUCCESS' : 'FAILURE';
-      updateJobStatus(job.id, st, { logs:result.logs, duration_ms:result.duration, completed_stages:result.completedStages });
+      const finalJob = updateJobStatus(job.id, st, { logs:result.logs, duration_ms:result.duration, completed_stages:result.completedStages });
       markWorkerJobDone(worker.id, result.success);
       console.log(`[WORKER] ${worker.name} finished job #${job.id}: ${st} in ${result.duration}ms`);
       broadcast({ type:'JOB_COMPLETED', job:{ ...job, status:st, duration_ms:result.duration, worker_id:worker.id, completed_stages:JSON.stringify(result.completedStages) } });
+      // Push build result commit to the matching GitHub branch (non-blocking)
+      pushBuildResult({ ...job, ...finalJob, status:st, duration_ms:result.duration, completed_stages:JSON.stringify(result.completedStages) });
     }
   } catch(err) {
     console.error(`[WORKER] ${worker.name} fatal error job #${job.id}:`, err.message);
