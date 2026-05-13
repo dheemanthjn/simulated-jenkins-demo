@@ -1,4 +1,20 @@
 {
-  "status": "not_built",
-  "branch": "develop"
+  "job_id": 102,
+  "status": "SUCCESS",
+  "repo": "api-service",
+  "branch": "develop",
+  "pusher": "teamlead-bob",
+  "pusher_role": "teamlead",
+  "queue_level": 2,
+  "preempted": false,
+  "preempted_cnt": 0,
+  "duration_s": 31.05,
+  "stages_done": [
+    "Checkout",
+    "Install Deps",
+    "Build",
+    "Test",
+    "Deploy"
+  ],
+  "completed_at": "2026-05-13T09:37:15.760Z"
 }
