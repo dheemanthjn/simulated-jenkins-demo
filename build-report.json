@@ -1,4 +1,17 @@
 {
-  "status": "not_built",
-  "branch": "feature/dashboard"
+  "job_id": 104,
+  "status": "FAILURE",
+  "repo": "frontend-app",
+  "branch": "feature/dashboard",
+  "pusher": "developer-carol",
+  "pusher_role": "developer",
+  "queue_level": 3,
+  "preempted": false,
+  "preempted_cnt": 0,
+  "duration_s": 22.53,
+  "stages_done": [
+    "Checkout",
+    "Install Deps"
+  ],
+  "completed_at": "2026-05-13T09:37:46.807Z"
 }
