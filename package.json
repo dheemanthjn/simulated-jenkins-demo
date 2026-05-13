@@ -7,6 +7,7 @@
     "start":          "node master/server.js",
     "dev":            "nodemon master/server.js",
     "demo":           "node scripts/demo.js",
+    "commit":         "node scripts/commit.js",
     "setup-branches": "node scripts/setup-demo-branches.js",
     "trigger-all":    "node scripts/trigger-all-branches.js",
     "simulate":       "node scripts/simulate-push.js",
