@@ -1,20 +1,14 @@
 {
-  "job_id": 113,
-  "status": "SUCCESS",
+  "job_id": 114,
+  "status": "FAILURE",
   "repo": "data-pipeline",
   "branch": "experimental/ml",
-  "pusher": "intern-frank",
+  "pusher": "intern-p1",
   "pusher_role": "intern",
   "queue_level": 5,
   "preempted": false,
   "preempted_cnt": 0,
-  "duration_s": 26.41,
-  "stages_done": [
-    "Checkout",
-    "Install Deps",
-    "Build",
-    "Test",
-    "Deploy"
-  ],
-  "completed_at": "2026-05-13T16:11:20.117Z"
+  "duration_s": 1.4,
+  "stages_done": [],
+  "completed_at": "2026-05-13T16:11:29.210Z"
 }
