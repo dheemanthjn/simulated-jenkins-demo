@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jenkins — Preemptive Scheduling</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;padding:16px}
+h1{color:#58a6ff;font-size:1.4rem;margin-bottom:4px}
+.sub{color:#8b949e;font-size:.78rem;margin-bottom:14px}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.sbox{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 14px;text-align:center;min-width:78px}
+.sbox .n{font-size:1.5rem;font-weight:700;color:#58a6ff}
+.sbox .l{font-size:.65rem;color:#8b949e;margin-top:2px}
+.sbox.sp .n{color:#f0883e}.sbox.pa .n{color:#a371f7}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px}
+.card h2{font-size:.72rem;color:#8b949e;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;border-bottom:1px solid #21262d;padding-bottom:6px}
+.full{grid-column:1/-1}
+.worker{display:flex;align-items:center;gap:9px;padding:7px;background:#0d1117;border-radius:6px;margin-bottom:5px;border:1px solid #21262d}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dot.IDLE{background:#3fb950}.dot.BUSY{background:#f0883e;animation:p 1s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+.job-card{background:#0d1117;border-radius:6px;margin-bottom:7px;border:1px solid #21262d;overflow:hidden}
+.job-card.running{border-color:#f0883e55}.job-card.paused{border-color:#a371f755}
+.job-card.success{border-color:#3fb95055}.job-card.failure{border-color:#f8514955}
+.jt{display:flex;justify-content:space-between;align-items:center;padding:6px 9px;font-size:.78rem}
+.jm{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.rtag{font-size:.62rem;padding:1px 5px;border-radius:3px;font-weight:700}
+.rtag.admin{background:#b91c1c;color:#fff}.rtag.teamlead{background:#b45309;color:#fff}
+.rtag.developer{background:#1d4ed8;color:#fff}.rtag.employee{background:#15803d;color:#fff}
+.rtag.intern{background:#4b5563;color:#fff}
+.badge{font-size:.65rem;padding:1px 6px;border-radius:8px;font-weight:700}
+.badge.PENDING{background:#30363d;color:#8b949e}.badge.RUNNING{background:#f0883e;color:#000}
+.badge.PAUSED{background:#a371f7;color:#fff}.badge.SUCCESS{background:#3fb950;color:#000}
+.badge.FAILURE{background:#f85149;color:#fff}.badge.CANCELLED{background:#6e40c9;color:#fff}
+.stage-bar{padding:5px 9px 9px;border-top:1px solid #21262d}
+.stages{display:flex;gap:3px;margin-bottom:5px}
+.sp{flex:1;text-align:center;padding:3px 1px;border-radius:4px;font-size:.6rem;border:1px solid #30363d;transition:all .3s}
+.sp .si{font-size:.85rem;display:block;margin-bottom:1px}.sp .sn{display:block;color:#8b949e;font-size:.55rem}
+.sp.pending{background:#161b22}.sp.running{background:#1c2a1a;border-color:#3fb950;animation:sp 1s infinite}
+.sp.done{background:#0f2818;border-color:#3fb950}.sp.failed{background:#2a1010;border-color:#f85149}
+.sp.paused{background:#1a1028;border-color:#a371f7}
+@keyframes sp{0%,100%{box-shadow:0 0 0 0 #3fb95044}50%{box-shadow:0 0 0 3px #3fb95022}}
+.pt{height:4px;background:#21262d;border-radius:3px;overflow:hidden}
+.pf{height:100%;border-radius:3px;transition:width .5s;background:linear-gradient(90deg,#3fb950,#58a6ff)}
+.pf.paused{background:linear-gradient(90deg,#a371f7,#6e40c9)}.pf.failed{background:#f85149}
+.pl{font-size:.62rem;color:#8b949e;margin-top:3px;display:flex;justify-content:space-between}
+.qlane{margin-bottom:7px;border-radius:6px;overflow:hidden;border:1px solid #30363d}
+.qh{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;font-size:.75rem;font-weight:700;color:#fff}
+.qb{padding:5px 8px;background:#0d1117;min-height:24px}
+.qchip{display:inline-block;padding:1px 7px;border-radius:8px;font-size:.65rem;margin:2px;background:#21262d;color:#e6edf3;border:1px solid #30363d}
+.qchip.running{border-color:#f0883e;color:#f0883e}.qchip.paused{border-color:#a371f7;color:#a371f7}
+#log{height:180px;overflow-y:auto;background:#0d1117;padding:9px;border-radius:4px;font-family:monospace;font-size:.7rem;color:#3fb950;border:1px solid #21262d}
+.lp{color:#f0883e}.ll{color:#a371f7}.le{color:#f85149}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.btn{padding:7px 13px;border-radius:7px;border:1px solid #30363d;background:#21262d;color:#e6edf3;font-size:.75rem;cursor:pointer;transition:all .2s}
+.btn:hover{border-color:#58a6ff;color:#58a6ff}
+.btn.primary{background:linear-gradient(135deg,#1f6feb,#388bfd);border-color:#388bfd;color:#fff}
+</style>
+</head>
+<body>
+<h1>Jenkins CI/CD Simulator</h1>
+<p class="sub">Preemptive Scheduling — Q1 jobs interrupt Q2–Q5 mid-pipeline. Paused jobs resume from their last completed stage.</p>
+<div class="stats" id="stats"></div>
+<div class="actions">
+  <button class="btn primary" onclick="trigger('admin-alice','Java','api-service','main')">⚡ Admin (Q1)</button>
+  <button class="btn primary" onclick="trigger('teamlead-bob','JavaScript','frontend-app','develop')">▶ TeamLead (Q2)</button>
+  <button class="btn" onclick="trigger('developer-carol','Python','data-pipeline','feature/x')">Dev (Q3)</button>
+  <button class="btn" onclick="trigger('employee-dave','Java','api-service','testing')">Employee (Q4)</button>
+  <button class="btn" onclick="trigger('intern-eve','Python','data-pipeline','experimental/y')">Intern (Q5)</button>
+  <button class="btn primary" onclick="burstInterns()">🧪 Fill Workers (Interns)</button>
+  <button class="btn primary" onclick="burstAdmin()">🚨 Trigger Admin (preempt!)</button>
+</div>
+<div class="grid">
+  <div class="card full"><h2>Queue Lanes</h2><div id="qlanes"></div></div>
+  <div class="card"><h2>Workers</h2><div id="workers"></div></div>
+  <div class="card"><h2>Active Jobs — Stage Progress</h2><div id="active"></div></div>
+  <div class="card full"><h2>All Jobs</h2><div id="alljobs"></div></div>
+  <div class="card full"><h2>Event Log</h2><div id="log"></div></div>
+</div>
+<script>
+const STAGES=['Checkout','Install Deps','Build','Test','Deploy'];
+const SICONS={'Checkout':'📦','Install Deps':'📥','Build':'🔨','Test':'🧪','Deploy':'🚀'};
+const QCFG={1:{label:'Q1 — Admin',color:'#b91c1c'},2:{label:'Q2 — Team Lead',color:'#b45309'},3:{label:'Q3 — Developer',color:'#1d4ed8'},4:{label:'Q4 — Employee',color:'#15803d'},5:{label:'Q5 — Intern',color:'#4b5563'}};
+const RCSS={admin:'admin',teamlead:'teamlead',developer:'developer',employee:'employee',intern:'intern'};
+const S={jobs:[],workers:[],stats:{},ss:{}};
+
+function gss(id){return S.ss[id]||{cur:-1,done:[]}}
+function setCur(id,i){if(!S.ss[id])S.ss[id]={cur:-1,done:[]};S.ss[id].cur=i}
+function addDone(id,name){if(!S.ss[id])S.ss[id]={cur:-1,done:[]};if(!S.ss[id].done.includes(name))S.ss[id].done.push(name);S.ss[id].cur=-1}
+function initSS(j){
+  const done=parseArr(j.completed_stages);
+  const cur=(j.status==='RUNNING')?+(j.current_stage_index??-1):-1;
+  S.ss[j.id]={cur,done};
+}
+function parseArr(r){if(!r)return[];try{return JSON.parse(r)}catch{return[]}}
+
+function stageBar(job){
+  const ss=gss(job.id),done=ss.done.length?ss.done:parseArr(job.completed_stages);
+  const cur=ss.cur??-1,paused=job.status==='PAUSED',failed=job.status==='FAILURE';
+  const pauseAt=paused?(+(job.resume_from_stage??0)):-1;
+
+  const pills=STAGES.map((name,i)=>{
+    let cls='pending',icon='○';
+    if(done.includes(name)){cls='done';icon='✅'}
+    else if(failed&&i===cur){cls='failed';icon='❌'}
+    else if(paused&&i===pauseAt){cls='paused';icon='⏸'}
+    else if(!paused&&i===cur&&job.status==='RUNNING'){cls='running';icon='⚡'}
+    return `<div class="sp ${cls}" title="${name}"><span class="si">${icon}</span><span class="sn">${name.replace(' ','&nbsp;')}</span></div>`;
+  }).join('');
+
+  const pct=Math.min(100,Math.round(((done.length+(cur>=0&&job.status==='RUNNING'?.5:0))/5)*100));
+  const bc=paused?'paused':failed?'failed':'';
+  const rLabel=paused?`⏸ Paused — resumes at ${STAGES[pauseAt]||''}`:cur>=0?`Running: ${STAGES[cur]||''}`:'';
+  return `<div class="stage-bar"><div class="stages">${pills}</div><div class="pt"><div class="pf ${bc}" style="width:${pct}%"></div></div><div class="pl"><span>${pct}% (${done.length}/5)</span><span style="color:${paused?'#a371f7':cur>=0?'#3fb950':'#8b949e'}">${rLabel}</span></div></div>`;
+}
+
+function jobCard(job){
+  const r=job.pusher_role||'intern',rc=RCSS[r]||'intern';
+  const pp=job.preempted_count>0?` <span style="color:#a371f7;font-size:.65rem">⏸×${job.preempted_count}</span>`:'';
+  const prom=job.promoted?` <span style="color:#58a6ff;font-size:.65rem">⬆×${job.promotion_count}</span>`:'';
+  const dur=job.duration_ms?` <span style="color:#8b949e;font-size:.68rem">${(job.duration_ms/1000).toFixed(1)}s</span>`:'';
+  const wk=job.worker_id?`<span style="color:#8b949e;font-size:.68rem">${job.worker_id} </span>`:'';
+  const cls=['running','paused','success','failure'].includes(job.status.toLowerCase())?job.status.toLowerCase():'';
+  return `<div class="job-card ${cls}" id="jc-${job.id}">
+    <div class="jt">
+      <div class="jm"><span class="rtag ${rc}">${r}</span><strong>#${job.id}</strong><span>${job.repo}@<code>${job.branch}</code></span><span style="color:#8b949e;font-size:.7rem">[Q${job.effective_queue}]</span>${pp}${prom}</div>
+      <div style="display:flex;align-items:center;gap:5px">${wk}<span class="badge ${job.status}">${job.status}</span>${dur}</div>
+    </div>${stageBar(job)}</div>`;
+}
+
+function renderStats(){
+  const s=S.stats;
+  document.getElementById('stats').innerHTML=[
+    ['Total',s.total||0,''],['Pending',s.pending||0,''],['Running',s.running||0,''],
+    ['Paused',s.paused||0,'pa'],['Success',s.success||0,''],['Failed',s.failure||0,''],
+    ['Preemptions',s.total_preemptions||0,'sp'],
+    ['Avg',s.avg_duration_ms?(s.avg_duration_ms/1000).toFixed(1)+'s':'—','']
+  ].map(([l,n,c])=>`<div class="sbox ${c}"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+}
+
+function renderQ(){
+  const active=S.jobs.filter(j=>['PENDING','RUNNING','PAUSED'].includes(j.status));
+  document.getElementById('qlanes').innerHTML=Object.entries(QCFG).map(([q,cfg])=>{
+    const qj=active.filter(j=>j.effective_queue===+q);
+    const chips=qj.map(j=>{
+      const cls=j.status==='RUNNING'?'running':j.status==='PAUSED'?'paused':'';
+      const pp=j.preempted_count>0?` ⏸×${j.preempted_count}`:'';
+      return `<span class="qchip ${cls}" title="${j.repo}@${j.branch}">#${j.id}${pp}</span>`;
+    }).join('')||'<span style="color:#3d4449;font-size:.7rem">empty</span>';
+    return `<div class="qlane"><div class="qh" style="background:${cfg.color}"><span>${cfg.label}</span><span>${qj.length} job(s)</span></div><div class="qb">${chips}</div></div>`;
+  }).join('');
+}
+
+function renderWorkers(){
+  document.getElementById('workers').innerHTML=S.workers.map(w=>`<div class="worker"><div class="dot ${w.status}"></div><div><strong>${w.id}</strong> (${w.language})<br><small>${w.status}${w.current_job?' — #'+w.current_job:''} · ✅${w.jobs_done||0} ❌${w.jobs_failed||0}</small></div></div>`).join('');
+}
+
+function renderActive(){
+  const a=S.jobs.filter(j=>['PENDING','RUNNING','PAUSED'].includes(j.status)).sort((a,b)=>a.effective_queue-b.effective_queue);
+  document.getElementById('active').innerHTML=a.length?a.map(jobCard).join(''):'<div style="color:#4b5563;font-size:.8rem">No active jobs</div>';
+}
+
+function renderAll2(){
+  const r=[...S.jobs].sort((a,b)=>b.id-a.id).slice(0,15);
+  document.getElementById('alljobs').innerHTML=r.length?r.map(jobCard).join(''):'<div style="color:#4b5563;font-size:.8rem">No jobs yet</div>';
+}
+
+function renderAll(){renderStats();renderQ();renderWorkers();renderActive();renderAll2();}
+
+function upsert(j){const i=S.jobs.findIndex(x=>x.id===j.id);i>=0?S.jobs[i]={...S.jobs[i],...j}:S.jobs.unshift(j);initSS(S.jobs.find(x=>x.id===j.id));}
+function updW(id,p){const w=S.workers.find(w=>w.id===id);if(w)Object.assign(w,p);}
+
+function log(msg,cls=''){
+  const el=document.getElementById('log'),d=document.createElement('div');
+  if(cls)d.className=cls;
+  d.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.prepend(d);if(el.children.length>80)el.removeChild(el.lastChild);
+}
+
+const es=new EventSource('/events');
+es.onmessage=e=>{
+  const ev=JSON.parse(e.data);
+  switch(ev.type){
+    case 'INIT': S.jobs=ev.jobs||[];S.workers=ev.workers||[];S.stats=ev.stats||{};S.jobs.forEach(j=>initSS(j));log('Connected');break;
+    case 'JOB_QUEUED': upsert(ev.job);log(`📥 #${ev.job.id} [Q${ev.job.queue_level}] ${ev.job.pusher_role} → ${ev.job.repo}@${ev.job.branch}`);break;
+    case 'JOB_STARTED': upsert(ev.job);log(`▶️ #${ev.job.id} [Q${ev.job.effective_queue}] → ${ev.job.worker_id}`);break;
+    case 'JOB_RESUMED': upsert(ev.job);log(`🔄 #${ev.job.id} RESUMED from "${ev.resumingFromStage}"`, 'll');break;
+    case 'STAGE_STARTED': setCur(ev.jobId,ev.stageIndex);log(`⚙️ [${ev.workerId}] #${ev.jobId} → ${ev.stage}`);renderActive();renderAll2();return;
+    case 'STAGE_COMPLETED': ev.status==='ok'?addDone(ev.jobId,ev.stage):setCur(ev.jobId,ev.stageIndex);renderActive();renderAll2();return;
+    case 'PREEMPTION_TRIGGERED': log(`⚡ PREEMPTION: #${ev.incomingJobId} [Q${ev.incomingQueue}] interrupts #${ev.victimJobId} [Q${ev.victimQueue}] on ${ev.workerId}`,'lp');break;
+    case 'JOB_PREEMPTED': upsert(ev.job);log(`⏸ #${ev.job.id} PAUSED before "${ev.pausedAtStage}"`, 'll');break;
+    case 'JOB_COMPLETED': upsert(ev.job);log(`${ev.job.status==='SUCCESS'?'✅':'❌'} #${ev.job.id} ${ev.job.status} ${((ev.job.duration_ms||0)/1000).toFixed(1)}s`);break;
+    case 'JOB_PROMOTED': upsert(ev.job);log(`⬆ #${ev.job.id} Q${ev.oldQueue}→Q${ev.newQueue} (${ev.waitSeconds}s)`,'ll');break;
+    case 'WORKER_BUSY': updW(ev.workerId,{status:'BUSY',current_job:ev.jobId});break;
+    case 'WORKER_IDLE': updW(ev.workerId,{status:'IDLE',current_job:null});break;
+  }
+  fetch('/api/jobs/meta/stats').then(r=>r.json()).then(s=>{S.stats=s;});
+  fetch('/api/jobs/meta/workers').then(r=>r.json()).then(ws=>ws.forEach(w=>updW(w.id,w)));
+  renderAll();
+};
+es.onerror=()=>log('⚠️ SSE disconnected','le');
+
+async function trigger(pusher,language,repo,branch){
+  const r=await fetch('/simulate-push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({repo,language,branch,commit_msg:`push from ${pusher}`,pusher,pusher_role:pusher.split('-')[0]})});
+  const d=await r.json();
+  log(`💉 Triggered #${d.job?.id} [Q${d.job?.queue_level}] ${pusher} → ${repo}@${branch}`);
+}
+async function burstInterns(){
+  log('🧪 Filling all 4 workers with intern Q5 jobs...');
+  for(let i=1;i<=4;i++){await trigger(`intern-test${i}`,'Python','data-pipeline',`experimental/test${i}`);await new Promise(r=>setTimeout(r,300));}
+}
+async function burstAdmin(){
+  log('🚨 Sending admin Q1 job — should trigger preemption!');
+  await trigger('admin-alice','Java','api-service','main');
+}
+</script>
+</body>
+</html>
