@@ -1,14 +1,14 @@
 {
-  "job_id": 108,
+  "job_id": 118,
   "status": "SUCCESS",
   "repo": "api-service",
   "branch": "main",
-  "pusher": "admin-alice",
+  "pusher": "admin-emergency",
   "pusher_role": "admin",
   "queue_level": 1,
   "preempted": false,
   "preempted_cnt": 0,
-  "duration_s": 28.34,
+  "duration_s": 47.87,
   "stages_done": [
     "Checkout",
     "Install Deps",
@@ -16,5 +16,5 @@
     "Test",
     "Deploy"
   ],
-  "completed_at": "2026-05-13T16:10:55.418Z"
+  "completed_at": "2026-05-13T16:12:22.306Z"
 }
