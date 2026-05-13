@@ -1,4 +1,18 @@
 {
-  "status": "not_built",
-  "branch": "experimental/ml"
+  "job_id": 106,
+  "status": "FAILURE",
+  "repo": "data-pipeline",
+  "branch": "experimental/ml",
+  "pusher": "intern-frank",
+  "pusher_role": "intern",
+  "queue_level": 5,
+  "preempted": false,
+  "preempted_cnt": 0,
+  "duration_s": 29.55,
+  "stages_done": [
+    "Checkout",
+    "Install Deps",
+    "Build"
+  ],
+  "completed_at": "2026-05-13T09:37:54.541Z"
 }
