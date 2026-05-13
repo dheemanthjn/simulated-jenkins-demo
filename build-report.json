@@ -1,19 +1,20 @@
 {
-  "job_id": 103,
-  "status": "FAILURE",
+  "job_id": 110,
+  "status": "SUCCESS",
   "repo": "frontend-app",
   "branch": "main",
-  "pusher": "admin-alice",
+  "pusher": "admin-carol",
   "pusher_role": "admin",
   "queue_level": 1,
   "preempted": false,
   "preempted_cnt": 0,
-  "duration_s": 46.05,
+  "duration_s": 33.75,
   "stages_done": [
     "Checkout",
     "Install Deps",
     "Build",
-    "Test"
+    "Test",
+    "Deploy"
   ],
-  "completed_at": "2026-05-13T09:37:33.346Z"
+  "completed_at": "2026-05-13T16:11:00.361Z"
 }
