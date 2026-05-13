@@ -1,5 +1,0 @@
-node_modules/
-jenkins.db
-.env
-.DS_Store
-*.log
